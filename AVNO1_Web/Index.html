@@ -1,0 +1,183 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="Scripts/jquery-3.6.0.min.js"></script>
+    <script src="Scripts/vue.min.js"></script>
+    <script src="Scripts/mui.min.js"></script>
+    <link href="Content/mui.min.css" rel="stylesheet" />
+    <style>
+        #app {
+            margin-left: 5px;
+            margin-right: 5px;
+            width: 100%;
+            height: 100%;
+            font-family: Tahoma, Arial, Roboto, "Droid Sans", "Helvetica Neue", "Droid Sans Fallback", "Heiti SC", sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+
+
+        .header {
+            position: fixed;
+            height: 45px;
+            width: 100%;
+            background-color: rgb(213, 32, 112);
+            top: 0px;
+            display: flow;
+            z-index: 999;
+        }
+
+            .header .inputPage {
+                position: absolute;
+                width: 200px;
+                right: 220px;
+                top: 50%;
+                transform: translate(0,-50%);
+            }
+
+            .header .inputSearch {
+                position: absolute;
+                width: 200px;
+                right: 10px;
+                top: 50%;
+                transform: translate(0,-50%);
+            }
+
+
+
+        .main {
+            position: relative;
+            width: 1350px;
+            overflow: hidden;
+            top: 45px;
+        }
+
+        .navbar {
+            position: relative;
+            height: 300px;
+            width: 200px;
+            left: 15px;
+            background-color: #ffffff;
+            float: left;
+            display: inline;
+        }
+
+
+
+        .content {
+            position: relative;
+            width: 800px;
+            left: 250px;
+            float: left;
+            display: inline;
+        }
+
+        .split {
+            position: relative;
+            width: 1300px;
+            float: left;
+        }
+
+        .main ul, li {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .footer {
+            width: 100%;
+            height: 2rem;
+        }
+
+        .favourite {
+            position: fixed;
+            right: 0px;
+            width: 150px;
+            background-color: indianred;
+            font-family: 'Helvetica Neue', Helvetica, sans-serif;
+            font-size: 17px;
+        }
+
+            .favourite a:link, a:visited {
+                text-decoration: none;
+                color: black;
+            }
+
+            .favourite .Title {
+                width: 100%;
+                background-color: #CC0066;
+                color: burlywood;
+            }
+
+            .favourite ul {
+                margin-left: 20px;
+            }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="header">
+            <div>
+                <h1>AVNO.1 文章</h1>
+                <input class="inputPage" type="range" min="1" max="1" id="RangePage" v-bind:value="cur" onchange="OnPageChange()" />
+                <input class="inputSearch" type="text" size="25" id="TextBoxSearch" placeholder="内容关键词..." v-on:keyup.13="clickSearch" />
+                <!--      <input class="inputButton" type="button" onclick="ButtonClick" />-->
+            </div>
+
+        </div>
+        <div class="main">
+
+            <ul>
+                <li v-for="Post in listPost">
+                    <div class="navbar">
+                        <table>
+                            <tr>
+                                <td width="100%" height="63px" style="overflow: hidden">
+                                    {{Post.标题}}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>{{Post.作者}}</td>
+                            </tr>
+
+                            <tr>
+                                <td>{{Post.日期}}</td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <img v-bind:src="Post.封面" width="200px" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                            </tr>
+                            <tr v-show="Post.作品名!=null"><td>相关联Video</td></tr>
+                            <tr v-show="Post.作品名!=null"><td>作品名：{{Post.作品名}}</td>
+                            </tr>
+                            <tr v-show="Post.番号!=null"><td>番号：{{Post.番号}}</td></tr>
+                            <tr v-show="Post.女优名!=null"><td>女优名：{{Post.女优名}}</td></tr>
+                            <tr v-show="Post.事务所!=null"><td>事务所：{{Post.事务所}}</td></tr>
+                            <tr v-show="Post.身高罩杯!=null"><td>身高罩杯：{{Post.身高罩杯}}</td></tr>
+                        </table>
+
+
+                    </div>
+                    <div class="content" v-html="Post.内容"></div>
+
+                    <div class="split" style="border: 3px solid rgb(213, 32, 112); z-index: 999"></div>
+
+                </li>
+            </ul>
+
+        </div>
+        <div cass="footer"></div>
+
+
+    </div>
+    <script src="config.js"></script>
+</body>
+</html>
