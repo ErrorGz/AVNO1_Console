@@ -83,41 +83,93 @@ namespace AVNO1_Console
             sw.Start();
             locker.EnterReadLock();
 
-            List<Post> listPost = null;
+            ////List<Post> listPost = null;
 
-            listPost = cache.Get("");
-            if (listPost == null)
+            ////listPost = cache.Get("");
+            ////if (listPost == null)
+            ////{
+            ////    listPost = conn.GetAllWithChildren<Post>()
+            ////        .OrderByDescending(o => o.日期)
+            ////        .ToList();
+            ////    cache.Add("", listPost);
+            ////}
+
+            //var listPost = conn.GetAllWithChildren<Post>().OrderByDescending(o => o.日期);
+            //var takePost = listPost.Skip(ipage * ipagesize)
+            //    .Take(ipagesize)
+            //    .Select(o => new PostJson
+            //    {
+            //        Id = o.Id,
+            //        标题 = o.标题,
+            //        作者 = o.作者,
+            //        日期 = o.日期.ToShortDateString(),
+            //        封面 = o.封面,
+            //        内容 = o.内容,
+            //        作品名 = o.Video != null ? o.Video.作品名 : null,
+            //        番号 = o.Video != null ? o.Video.番号 : null,
+            //        发行日 = o.Video != null ? o.Video.发行日 : null,
+            //        女优名 = o.Video != null ? o.Video.女优名 : null,
+            //        事务所 = o.Video != null ? o.Video.事务所 : null,
+            //        身高罩杯 = o.Video != null ? o.Video.身高罩杯 : null
+            //    }).ToList();
+            int count2 = 0;
+            List<PostJson> takePost2 = null;
+            conn.RunInTransaction(() =>
             {
-                listPost = conn.GetAllWithChildren<Post>()
-                    .OrderByDescending(o => o.日期)
-                    .ToList();
-                cache.Add("", listPost);
-            }
-            var takePost = listPost.Skip(ipage * ipagesize)
-                .Take(ipagesize)
-                .Select(o => new PostJson
-                {
-                    Id = o.Id,
-                    标题 = o.标题,
-                    作者 = o.作者,
-                    日期 = o.日期.ToShortDateString(),
-                    封面 = o.封面,
-                    内容 = o.内容,
-                    作品名 = o.Video != null ? o.Video.作品名 : null,
-                    番号 = o.Video != null ? o.Video.番号 : null,
-                    发行日 = o.Video != null ? o.Video.发行日 : null,
-                    女优名 = o.Video != null ? o.Video.女优名 : null,
-                    事务所 = o.Video != null ? o.Video.事务所 : null,
-                    身高罩杯 = o.Video != null ? o.Video.身高罩杯 : null
-                }).ToList();
+                count2 = conn.Table<Post>().Count();
+                var listPost2 = conn.Table<Post>().OrderByDescending(o => o.日期).Skip(ipage * ipagesize).Take(ipagesize).ToList();
+                takePost2 = listPost2.Select(o =>
+                  {
+                      var v = conn.Table<Video>().Where(p => p.PostId == o.Id).FirstOrDefault();
+                      if (v != null)
+                      {
+                          return new PostJson
+                          {
+                              Id = o.Id,
+                              标题 = o.标题,
+                              作者 = o.作者,
+                              日期 = o.日期.ToShortDateString(),
+                              封面 = o.封面,
+                              内容 = o.内容,
+                              作品名 = v != null ? v.作品名 : null,
+                              番号 = v != null ? v.番号 : null,
+                              发行日 = v != null ? v.发行日 : null,
+                              女优名 = v != null ? v.女优名 : null,
+                              事务所 = v != null ? v.事务所 : null,
+                              身高罩杯 = v != null ? v.身高罩杯 : null
+                          };
+                      }
+                      else
+                      {
+                          return new PostJson
+                          {
+                              Id = o.Id,
+                              标题 = o.标题,
+                              作者 = o.作者,
+                              日期 = o.日期.ToShortDateString(),
+                              封面 = o.封面,
+                              内容 = o.内容,
+                          };
+                      }
+                  }).ToList();
+            });
+
 
             locker.ExitReadLock();
             sw.Stop();
 
+            WriteLine($"GetLastPost,page:{page},size:{ipagesize},time:{sw.ElapsedMilliseconds / 1000f:0.##}");
+
+            takePost2.ForEach(o =>
+            {
+                WriteLine($"GetLastPost:{o.标题}");
+            });
+
             ResponseJson json = new ResponseJson()
             {
-                Posts = takePost,
-                Count = listPost.Count(),
+                Posts = takePost2,
+                //Count = listPost2.Count(),
+                Count = count2,
                 ms = sw.ElapsedMilliseconds,
                 Msg = null
 
@@ -176,6 +228,13 @@ namespace AVNO1_Console
             locker.ExitReadLock();
             sw.Stop();
 
+            WriteLine($"GetLastPost,page:{page},size:{ipagesize},searchtext:{searchText},time:{sw.ElapsedMilliseconds / 1000:0.##}");
+
+            takePost.ForEach(o =>
+            {
+                WriteLine($"GetLastPost:{o.标题}");
+            });
+
             ResponseJson json = new ResponseJson()
             {
                 Posts = takePost,
@@ -188,18 +247,27 @@ namespace AVNO1_Console
         }
 
 
-        private Stream GetStream(string str)
+        //private Stream GetStream(string str)
+        //{
+        //    //str = Base64.EncodeBase64(str);
+        //    MemoryStream ms = new MemoryStream();
+        //    StreamWriter sw = new StreamWriter(ms);
+        //    sw.AutoFlush = true;
+        //    sw.Write(str);
+        //    ms.Position = 0;
+        //    WebOperationContext.Current.OutgoingResponse.ContentType = "text/plain";
+        //    return ms;
+        //}
+
+        static private void Write(string msg)
         {
-            //str = Base64.EncodeBase64(str);
-            MemoryStream ms = new MemoryStream();
-            StreamWriter sw = new StreamWriter(ms);
-            sw.AutoFlush = true;
-            sw.Write(str);
-            ms.Position = 0;
-            WebOperationContext.Current.OutgoingResponse.ContentType = "text/plain";
-            return ms;
+            Debug.Write(msg);
+            Console.Write(msg);
         }
-
-
+        static private void WriteLine(string msg)
+        {
+            Debug.WriteLine(DateTime.Now.ToString() + " " + msg);
+            Console.WriteLine(DateTime.Now.ToString() + " " + msg);
+        }
     }
 }

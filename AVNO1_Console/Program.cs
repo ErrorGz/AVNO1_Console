@@ -32,6 +32,8 @@ namespace AVNO1_Console
             string dbfile = "db.sqlite";
             if (args.Count() > 0)
                 dbfile = args[0];
+
+            WriteLine($"database file is:{dbfile}");
             var conn = p.InitDataBase(locker, dbfile);
             var site = conn.GetWithChildren<Site>(1);
             site.Cookies.ForEach(o =>
@@ -70,8 +72,8 @@ namespace AVNO1_Console
             WriteLine("OpenService()");
             p.OpenService(locker, conn);
 
-            WriteLine("CommandThread()");
-            p.CommandThread(p.source.Token, locker, conn);
+            //WriteLine("CommandThread()");
+            //p.CommandThread(p.source.Token, locker, conn);
 
             WriteLine($"PageToPostThread()");
             p.PageToPostThread(p.source.Token, locker, conn);
